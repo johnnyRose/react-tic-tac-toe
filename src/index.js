@@ -36,7 +36,7 @@ class Board extends React.Component {
       return;
     }
 
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
+    squares[i] = getNextMove(this.state.xIsNext);
 
     // Brand new state object (immutability)
     this.setState({
@@ -60,7 +60,7 @@ class Board extends React.Component {
     if (winner) {
       status = 'Winner: ' + winner;
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      status = 'Next player: ' + getNextMove(this.state.xIsNext);
     }
 
     return (
@@ -130,4 +130,8 @@ function calculateWinner(squares) {
   }
 
   return null;
+}
+
+function getNextMove(xIsNext) {
+  return xIsNext ? 'X' : 'O';
 }
