@@ -103,11 +103,13 @@ class Game extends React.Component {
 
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button
+            onClick={() => this.jumpTo(move)}
+            className={this.state.stepNumber === move ? "history-selected" : ""}>{desc}
+          </button>
         </li>
       );
     });
-
 
     let status;
 
