@@ -30,6 +30,12 @@ class Board extends React.Component {
     // 3. Determining when to re-render components is easier
     // (https://reactjs.org/tutorial/tutorial.html#data-change-without-mutation)
     const squares = this.state.squares.slice();
+
+    if (squares[i] || calculateWinner(squares)) {
+      // If the square is filled in or the game is already won, don't modify the state any further
+      return;
+    }
+
     squares[i] = this.state.xIsNext ? 'X' : 'O';
 
     // Brand new state object (immutability)
