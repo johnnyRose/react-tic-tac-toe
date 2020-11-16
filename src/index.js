@@ -54,7 +54,6 @@ class Game extends React.Component {
         squares: Array(9).fill(null),
       }],
       stepNumber: 0,
-      xIsNext: true,
     }
   }
 
@@ -74,7 +73,7 @@ class Game extends React.Component {
       return;
     }
 
-    squares[i] = getNextMove(this.state.xIsNext);
+    squares[i] = getNextMove(this.state.stepNumber);
 
     // Brand new state object (immutability)
     this.setState({
@@ -82,14 +81,12 @@ class Game extends React.Component {
         squares: squares
       }]),
       stepNumber: history.length,
-      xIsNext: !this.state.xIsNext,
     });
   }
 
   jumpTo(step) {
     this.setState({
       stepNumber: step,
-      xIsNext: (step % 2) === 0,
     });
   }
 
@@ -120,7 +117,7 @@ class Game extends React.Component {
       if (allSquaresFilled(current.squares)) {
         status = "This game is a tie!";
       } else {
-        status = 'Next player: ' + getNextMove(this.state.xIsNext);
+        status = 'Next player: ' + getNextMove(this.state.stepNumber);
       }
     }
 
@@ -171,8 +168,8 @@ function calculateWinner(squares) {
   return null;
 }
 
-function getNextMove(xIsNext) {
-  return xIsNext ? 'X' : 'O';
+function getNextMove(step) {
+  return (step % 2 === 0) ? 'X' : 'O';
 }
 
 function allSquaresFilled(squares) {
