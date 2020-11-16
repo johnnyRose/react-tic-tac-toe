@@ -13,63 +13,17 @@ function Square(props) {
 
 class Board extends React.Component {
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
-  }
-
-  handleClick(i) {
-    // We create a shallow clone of squares here.
-    // Immutability is important in React for several reasons:
-    // 1. Keeping a record of history is easy
-    // 2. Detecting changes is easy when the object reference is different
-    // 3. Determining when to re-render components is easier
-    // (https://reactjs.org/tutorial/tutorial.html#data-change-without-mutation)
-    const squares = this.state.squares.slice();
-
-    if (squares[i] || calculateWinner(squares)) {
-      // If the square is filled in or the game is already won, don't modify the state any further
-      return;
-    }
-
-    squares[i] = getNextMove(this.state.xIsNext);
-
-    // Brand new state object (immutability)
-    this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext,
-    });
-  }
-
   renderSquare(i) {
     return (
       <Square 
-        value={this.state.squares[i]}
-        onClick={() => this.handleClick(i)} // this is named onClick only for clarity and is not actually bound to an event, like button's onClick in Square
+        value={this.props.squares[i]}
+        onClick={() => this.props.onClick(i)} // this is named onClick only for clarity and is not actually bound to an event, like button's onClick in Square
       />);
   }
 
   render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-
-    if (winner) {
-      status = 'Winner: ' + winner;
-    } else {
-      if (allSquaresFilled(this.state.squares)) {
-        status = "This game is a tie!";
-      } else {
-        status = 'Next player: ' + getNextMove(this.state.xIsNext);
-      }
-    }
-
     return (
       <div>
-        <div className="status">{status}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -91,15 +45,96 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      history: [{
+        squares: Array(9).fill(null),
+      }],
+      stepNumber: 0,
+      xIsNext: true,
+    }
+  }
+
+  handleClick(i) {
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const current = history[history.length - 1];
+    // We create a shallow clone of squares here.
+    // Immutability is important in React for several reasons:
+    // 1. Keeping a record of history is easy
+    // 2. Detecting changes is easy when the object reference is different
+    // 3. Determining when to re-render components is easier
+    // (https://reactjs.org/tutorial/tutorial.html#data-change-without-mutation)
+    const squares = current.squares.slice();
+
+    if (squares[i] || calculateWinner(squares)) {
+      // If the square is filled in or the game is already won, don't modify the state any further
+      return;
+    }
+
+    squares[i] = getNextMove(this.state.xIsNext);
+
+    // Brand new state object (immutability)
+    this.setState({
+      history: history.concat([{ // concat returns a new array
+        squares: squares
+      }]),
+      stepNumber: history.length,
+      xIsNext: !this.state.xIsNext,
+    });
+  }
+
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0,
+    });
+  }
+
   render() {
+
+    const history = this.state.history;
+    const current = history[this.state.stepNumber];
+    const winner = calculateWinner(current.squares);
+
+    const moves = history.map((step, move) => {
+      const desc = move ?
+        'Go to move #' + move :
+        'Go to game start';
+
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        </li>
+      );
+    });
+
+
+    let status;
+
+    if (winner) {
+      status = 'Winner: ' + winner;
+    } else {
+      if (allSquaresFilled(current.squares)) {
+        status = "This game is a tie!";
+      } else {
+        status = 'Next player: ' + getNextMove(this.state.xIsNext);
+      }
+    }
+
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+          <Board
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)}
+          />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
+          <div>{status}</div>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
