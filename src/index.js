@@ -60,7 +60,11 @@ class Board extends React.Component {
     if (winner) {
       status = 'Winner: ' + winner;
     } else {
-      status = 'Next player: ' + getNextMove(this.state.xIsNext);
+      if (allSquaresFilled(this.state.squares)) {
+        status = "This game is a tie!";
+      } else {
+        status = 'Next player: ' + getNextMove(this.state.xIsNext);
+      }
     }
 
     return (
@@ -134,4 +138,10 @@ function calculateWinner(squares) {
 
 function getNextMove(xIsNext) {
   return xIsNext ? 'X' : 'O';
+}
+
+function allSquaresFilled(squares) {
+  return squares
+    .filter(square => square === null)
+    .length === 0;
 }
