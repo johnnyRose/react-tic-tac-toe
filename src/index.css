@@ -52,3 +52,7 @@ ol, ul {
 .history-selected {
   font-weight: bold;
 }
+
+.winning-square {
+  color: red;
+}

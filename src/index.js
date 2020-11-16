@@ -5,7 +5,7 @@ import './index.css';
 // Square doesn't maintain any state, so we can use a more terse Function Component which only renders.
 function Square(props) {
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className={"square " + (props.isWinner ? "winning-square" : "")} onClick={props.onClick}>
       {props.value}
     </button>
   );
@@ -13,31 +13,38 @@ function Square(props) {
 
 class Board extends React.Component {
 
-  renderSquare(i) {
+  renderSquare(i, winningSquares) {
+    const isWinner = winningSquares
+      .filter(square => square === i)
+      .length > 0;
+
     return (
       <Square 
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)} // this is named onClick only for clarity and is not actually bound to an event, like button's onClick in Square
+        isWinner={isWinner}
       />);
   }
 
   render() {
+    const winningSquares = this.props.winningSquares;
+
     return (
       <div>
         <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
+          {this.renderSquare(0, winningSquares)}
+          {this.renderSquare(1, winningSquares)}
+          {this.renderSquare(2, winningSquares)}
         </div>
         <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
+          {this.renderSquare(3, winningSquares)}
+          {this.renderSquare(4, winningSquares)}
+          {this.renderSquare(5, winningSquares)}
         </div>
         <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
+          {this.renderSquare(6, winningSquares)}
+          {this.renderSquare(7, winningSquares)}
+          {this.renderSquare(8, winningSquares)}
         </div>
       </div>
     );
@@ -68,7 +75,7 @@ class Game extends React.Component {
     // (https://reactjs.org/tutorial/tutorial.html#data-change-without-mutation)
     const squares = current.squares.slice();
 
-    if (squares[i] || calculateWinner(squares)) {
+    if (squares[i] || calculateWinner(squares).winner) {
       // If the square is filled in or the game is already won, don't modify the state any further
       return;
     }
@@ -94,7 +101,7 @@ class Game extends React.Component {
 
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+    const { winner, winningSquares } = calculateWinner(current.squares);
 
     const moves = history.map((step, move) => {
       const desc = move ?
@@ -129,6 +136,7 @@ class Game extends React.Component {
           <Board
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
+            winningSquares={winningSquares}
           />
         </div>
         <div className="game-info">
@@ -163,11 +171,17 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return {
+        winner: squares[a],
+        winningSquares: lines[i],
+      };
     }
   }
 
-  return null;
+  return {
+    winner: null,
+    winningSquares: []
+  };
 }
 
 function getNextMove(step) {
